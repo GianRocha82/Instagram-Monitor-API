@@ -1,0 +1,47 @@
+Para executar a API:
+
+Windows (Recomendado)
+cmd
+cd "C:\Users\gianl\OneDrive\Desktop\Análise de Dados\Projetos\Monitoramento de Instagram\instagram_monitor_api"
+start.bat
+
+
+Linux/macOS
+bash
+cd "C:/Users/gianl/OneDrive/Desktop/Análise de Dados/Projetos/Monitoramento de Instagram/instagram_monitor_api"
+chmod +x start.sh
+./start.sh
+
+
+Manual (Qualquer SO)
+bash
+1. Ativar venv
+Windows:
+venv\Scripts\activate
+Linux/macOS:
+source venv/bin/activate
+
+2. Instalar dependências (se primeira vez)
+pip install --upgrade pip
+pip install -r requirements.txt
+
+3. Iniciar servidor
+python -m app.main
+
+
+
+Após iniciar:
+- Abra: http://localhost:8000
+- Interface web com formulário de 6 passos
+- Preencha:
+  1. Empresa:
+  2. Perfil estratégico:
+  3. Período:
+  4. Modo:
+  5. Monitoramento:
+  6. Pasta saída:
+- Clique "Iniciar Monitoramento"
+- Dashboard abre automaticamente ao final
+
+
+Dashboard standalone (sem servidor): abra Dashboard_fc_horacio.html no navegador.
