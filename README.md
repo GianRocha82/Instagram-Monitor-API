@@ -1,6 +1,6 @@
 # Instagram Monitor API
 
-API localhost para raspagem e monitoramento de perfis estratégicos no Instagram. Desenvolvida com FastAPI, Instaloader e interface web integrada.
+API localhost para raspagem e monitoramento de perfis no Instagram. Desenvolvida com FastAPI, Instaloader e interface web integrada.
 
 ## Visão Geral
 
