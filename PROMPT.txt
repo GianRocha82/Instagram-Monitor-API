@@ -28,7 +28,7 @@ Em sequência, será realizada a raspagem do perfil estratégico de acordo com o
 3º A API deve fornecer um dashboard local em uma seção separada a partir do arquivo csv do perfil estratégico respondendo as seguintes perguntas:
 0. No topo do dashboard deve conter: a foto do perfil, a quantidade de seguidores, e a legenda
 1. Taxa de Engajamento: Qual a relação entre o total de interações e o número de seguidores em percentual dos perfis?
-1. Mostre em um card
+1.1 Mostre em um card
 2. Quais temáticas tiveram maior interação dos usuários? 
 2.1 Mostre apenas o top 5 em um gráfico pizza
 3. Qual a quantidade de interações do perfil ao longo do tempo (hierarquia de mês, trimestre, ano)?
