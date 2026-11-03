@@ -4,9 +4,11 @@ API localhost para raspagem e monitoramento de perfis no Instagram feita com o H
 
 ## Visão Geral
 
-Esta API automatiza a coleta de dados de perfis do Instagram para análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos. Foi projetada para:
+Esta API automatiza a coleta de dados de perfis estratégicos do Instagram para a análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos em HTML. 
 
-- **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas
+Foi projetada para:
+
+- **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas de marketing
 - **Pesquisadores** que analisam dinâmicas de engajamento e temáticas no Instagram
 - **Gestores de social media** que monitoram concorrentes e influenciadores
 
@@ -377,6 +379,10 @@ Atualmente **simulado** (marca como configurado). Para produção, implementar c
 - `APScheduler` ou `cron` no servidor
 - Persistência de jobs (Redis/PostgreSQL)
 - Notificações (e-mail, webhook, Telegram)
+
+### Análise de compatibilidade
+
+- A compatibilidade entre o perfil contratante e o perfil estratégico depende da correspondência direta entre as temáticas das hashtags utilizadas em ambos os perfis, entretanto, é importante que haja um refinamento da temática/nicho do perfil contratante para melhor análise
 
 ---
 
