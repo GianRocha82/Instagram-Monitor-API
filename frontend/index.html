@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Monitor - Monitoramento de Perfis Estratégicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ig-primary: #E1306C;
+            --ig-primary-dark: #C13584;
+            --ig-gradient-start: #F58529;
+            --ig-gradient-mid: #DD2A7B;
+            --ig-gradient-end: #8134AF;
+            --ig-bg-dark: #1A1A1A;
+            --ig-bg-card: #262626;
+            --ig-bg-hover: #2E2E2E;
+            --ig-text-primary: #FFFFFF;
+            --ig-text-secondary: #A8A8A8;
+            --ig-text-muted: #8E8E8E;
+            --ig-border: #3A3A3A;
+            --ig-success: #00BA7C;
+            --ig-warning: #FFB300;
+            --ig-error: #ED4956;
+        }
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background: var(--ig-bg-dark);
+            color: var(--ig-text-primary);
+            min-height: 100vh;
+        }
+        
+        .ig-gradient-text {
+            background: linear-gradient(45deg, var(--ig-gradient-start), var(--ig-gradient-mid), var(--ig-gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .ig-gradient-border {
+            position: relative;
+        }
+        
+        .ig-gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(45deg, var(--ig-gradient-start), var(--ig-gradient-mid), var(--ig-gradient-end));
+            z-index: -1;
+        }
+        
+        .ig-card {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+        }
+        
+        .ig-input {
+            background: var(--ig-bg-dark);
+            border: 1px solid var(--ig-border);
+            color: var(--ig-text-primary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .ig-input:focus {
+            outline: none;
+            border-color: var(--ig-primary);
+            box-shadow: 0 0 0 3px rgba(225, 48, 108, 0.2);
+        }
+        
+        .ig-input::placeholder {
+            color: var(--ig-text-muted);
+        }
+        
+        .ig-btn-primary {
+            background: linear-gradient(45deg, var(--ig-gradient-start), var(--ig-gradient-mid), var(--ig-gradient-end));
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .ig-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(225, 48, 108, 0.4);
+        }
+        
+        .ig-btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .ig-btn-secondary {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            color: var(--ig-text-primary);
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .ig-btn-secondary:hover {
+            background: var(--ig-bg-hover);
+            border-color: var(--ig-primary);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(45deg, var(--ig-gradient-start), var(--ig-gradient-mid), var(--ig-gradient-end));
+            color: white;
+        }
+        
+        .tab-btn:not(.active) {
+            color: var(--ig-text-secondary);
+            background: transparent;
+        }
+        
+        .tab-btn:not(.active):hover {
+            color: var(--ig-text-primary);
+            background: var(--ig-bg-hover);
+        }
+        
+        .profile-avatar {
+            border: 3px solid;
+            border-image: linear-gradient(45deg, var(--ig-gradient-start), var(--ig-gradient-mid), var(--ig-gradient-end)) 1;
+        }
+        
+        .stat-card {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .chart-container {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .insight-card {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .filter-chip {
+            background: var(--ig-bg-dark);
+            border: 1px solid var(--ig-border);
+            color: var(--ig-text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-chip:hover, .filter-chip.active {
+            border-color: var(--ig-primary);
+            color: var(--ig-primary);
+        }
+        
+        .loading-spinner {
+            border: 3px solid var(--ig-border);
+            border-top-color: var(--ig-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--ig-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ig-text-muted);
+            background: var(--ig-bg-dark);
+            transition: all 0.3s;
+        }
+        
+        .step-circle.active {
+            border-color: var(--ig-primary);
+            color: var(--ig-primary);
+            background: rgba(225, 48, 108, 0.1);
+        }
+        
+        .step-circle.completed {
+            border-color: var(--ig-success);
+            background: var(--ig-success);
+            color: white;
+        }
+        
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--ig-border);
+        }
+        
+        .step-line.completed {
+            background: var(--ig-success);
+        }
+        
+        .mode-card {
+            background: var(--ig-bg-card);
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .mode-card:hover {
+            border-color: var(--ig-primary);
+        }
+        
+        .mode-card.selected {
+            border-color: var(--ig-primary);
+            background: rgba(225, 48, 108, 0.05);
+        }
+        
+        .mode-card input[type="radio"] {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 16px;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--ig-border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ig-primary);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- SECTION 1: INPUT FORM (Full Screen) -->
+    <section id="input-section" class="min-h-screen">
+        <div class="max-w-6xl mx-auto px-4 py-12 md:py-20">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold ig-gradient-text mb-4">
+                    Instagram Monitor
+                </h1>
+                <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+                    Monitoramento de engajamento de perfis estratégicos para campanhas de influência
+                </p>
+            </div>
+            
+            <!-- Progress Steps -->
+            <div class="step-indicator mb-12 max-w-4xl mx-auto" id="progress-steps">
+                <div class="step-circle active" data-step="1">1</div>
+                <div class="step-line" data-line="1"></div>
+                <div class="step-circle" data-step="2">2</div>
+                <div class="step-line" data-line="2"></div>
+                <div class="step-circle" data-step="3">3</div>
+                <div class="step-line" data-line="3"></div>
+                <div class="step-circle" data-step="4">4</div>
+                <div class="step-line" data-line="4"></div>
+                <div class="step-circle" data-step="5">5</div>
+                <div class="step-line" data-line="5"></div>
+                <div class="step-circle" data-step="6">6</div>
+            </div>
+            
+            <form id="monitor-form" class="space-y-8">
+                <!-- Step 1: Company Profile -->
+                <fieldset class="ig-card p-6 md:p-8" data-step-content="1">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-r from-[#F58529] to-[#DD2A7B] flex items-center justify-center text-white text-sm font-bold">1</span>
+                        Perfil da Empresa Contratante
+                    </legend>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Forneça o link do Instagram da empresa que irá contratar os influenciadores. 
+                        Coletaremos os primeiros 25 posts para criar uma base temática de referência.
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">URL do Perfil da Empresa *</label>
+                            <input type="url" name="company_url" class="ig-input" 
+                                   placeholder="https://www.instagram.com/empresa/" required>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Step 2: Strategic Profiles -->
+                <fieldset class="ig-card p-6 md:p-8 hidden" data-step-content="2">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center text-gray-500 text-sm font-bold">2</span>
+                        Perfis Estratégicos para Monitorar
+                    </legend>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Adicione uma lista de perfis (influenciadores) que deseja monitorar. 
+                        Mínimo 1, sem limite máximo.
+                    </p>
+                    <div id="profiles-list" class="space-y-3 mb-4">
+                        <div class="flex gap-2" data-profile-row>
+                            <input type="url" name="profiles[]" class="ig-input flex-1" 
+                                   placeholder="https://www.instagram.com/influencer1/" required>
+                            <button type="button" class="ig-btn-secondary px-4" onclick="removeProfileRow(this)">Remover</button>
+                        </div>
+                    </div>
+                    <button type="button" class="ig-btn-secondary" onclick="addProfileRow()">
+                        + Adicionar Perfil
+                    </button>
+                </fieldset>
+                
+                <!-- Step 3: Time Range -->
+                <fieldset class="ig-card p-6 md:p-8 hidden" data-step-content="3">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center text-gray-500 text-sm font-bold">3</span>
+                        Intervalo de Data
+                    </legend>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Selecione o período dos dados a serem analisados.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="time-range-options">
+                        <label class="mode-card selected" data-value="30">
+                            <input type="radio" name="time_range" value="30" checked>
+                            <div class="font-semibold text-lg">Últimos 30 dias</div>
+                            <div class="text-sm text-gray-400 mt-1">Período de análise</div>
+                        </label>
+                        <label class="mode-card" data-value="90">
+                            <input type="radio" name="time_range" value="90">
+                            <div class="font-semibold text-lg">Últimos 90 dias</div>
+                            <div class="text-sm text-gray-400 mt-1">Período de análise</div>
+                        </label>
+                        <label class="mode-card" data-value="180">
+                            <input type="radio" name="time_range" value="180">
+                            <div class="font-semibold text-lg">Últimos 180 dias</div>
+                            <div class="text-sm text-gray-400 mt-1">Período de análise</div>
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <!-- Step 4: Collection Mode -->
+                <fieldset class="ig-card p-6 md:p-8 hidden" data-step-content="4">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center text-gray-500 text-sm font-bold">4</span>
+                        Modo de Coleta
+                    </legend>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Escolha como os dados serão coletados. Cada modo tem benefícios e limitações.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="collection-modes">
+                        <label class="mode-card selected" data-mode="public">
+                            <input type="radio" name="collection_mode" value="public" checked>
+                            <div class="font-semibold">Público (sem login)</div>
+                            <div class="text-sm text-gray-400 mt-2">Acessa apenas dados públicos. Limitações: perfis privados não acessíveis, rate limits mais restritivos, sem acesso a stories/insights privados.</div>
+                        </label>
+                        <label class="mode-card" data-mode="private">
+                            <input type="radio" name="collection_mode" value="private">
+                            <div class="font-semibold">Perfil privado (com login)</div>
+                            <div class="text-sm text-gray-400 mt-2">Acessa perfis privados que você segue, limites maiores, dados mais completos. Requer credenciais válidas do Instagram.</div>
+                        </label>
+                    </div>
+                    <div id="private-credentials" class="hidden mt-6 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Username Instagram *</label>
+                                <input type="text" name="instagram_username" class="ig-input" placeholder="seu_usuario">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Senha Instagram *</label>
+                                <input type="password" name="instagram_password" class="ig-input" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500">
+                            As credenciais são usadas apenas para autenticação no Instaloader e não são armazenadas.
+                        </p>
+                    </div>
+                </fieldset>
+                
+                <!-- Step 5: Monitoring Mode -->
+                <fieldset class="ig-card p-6 md:p-8 hidden" data-step-content="5">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center text-gray-500 text-sm font-bold">5</span>
+                        Tipo de Monitoramento
+                    </legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="mode-card selected" data-mode="once">
+                            <input type="radio" name="monitoring_mode" value="once" checked>
+                            <div class="font-semibold">Coleta única</div>
+                            <div class="text-sm text-gray-400 mt-2">Snapshot único dos dados no momento da execução.</div>
+                        </label>
+                        <label class="mode-card" data-mode="weekly">
+                            <input type="radio" name="monitoring_mode" value="weekly">
+                            <div class="font-semibold">Monitoramento semanal (30 dias)</div>
+                            <div class="text-sm text-gray-400 mt-2">Coleta automática semanal por 30 dias, atualizando CSV com novos posts.</div>
+                        </label>
+                    </div>
+                    <div id="weekly-info" class="hidden mt-4 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+                        <p class="text-sm text-yellow-300">
+                            ⚠️ O monitoramento semanal realizará coletas automáticas a cada 7 dias por 30 dias, 
+                            atualizando o arquivo CSV com novos posts detectados. Requer que a API permaneça rodando.
+                        </p>
+                    </div>
+                </fieldset>
+                
+                <!-- Step 6: Output Path -->
+                <fieldset class="ig-card p-6 md:p-8 hidden" data-step-content="6">
+                    <legend class="text-lg font-semibold mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center text-gray-500 text-sm font-bold">6</span>
+                        Local de Salvamento
+                    </legend>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Escolha onde o arquivo Excel (.xlsx) com as 3 abas (Postagens, Hashtags, Conteúdo) será salvo.
+                    </p>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Caminho da Pasta *</label>
+                        <input type="text" name="output_path" class="ig-input" 
+                               id="output-path-input" placeholder="C:\Users\...\Monitoramento de Instagram\data" required>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        O arquivo será nomeado automaticamente: <code class="text-gray-300">{perfil}_{tempo}_{data}.xlsx</code>
+                    </p>
+                </fieldset>
+                
+                <!-- Navigation -->
+                <div class="flex justify-between pt-4 border-t border-gray-700">
+                    <button type="button" id="btn-prev" class="ig-btn-secondary hidden" onclick="prevStep()">Voltar</button>
+                    <div class="flex gap-3">
+                        <button type="button" id="btn-next" class="ig-btn-primary" onclick="nextStep()">Próximo</button>
+                        <button type="submit" id="btn-submit" class="ig-btn-primary hidden">Iniciar Monitoramento</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <!-- LOADING SECTION -->
+    <section id="loading-section" class="hidden min-h-screen flex items-center justify-center">
+        <div class="text-center max-w-md mx-auto px-4">
+            <div class="loading-spinner mx-auto mb-8"></div>
+            <h2 class="text-2xl font-bold mb-4">Processando Monitoramento</h2>
+            <p class="text-gray-400 mb-6" id="loading-message">Iniciando...</p>
+            
+            <!-- Progress Ring -->
+            <div class="relative w-32 h-32 mx-auto mb-8">
+                <svg class="progress-ring" width="128" height="128">
+                    <circle class="progress-ring-circle" 
+                            stroke="url(#gradient)" 
+                            stroke-width="6" 
+                            fill="transparent" 
+                            r="58" 
+                            cx="64" 
+                            cy="64" 
+                            stroke-dasharray="364.4" 
+                            stroke-dashoffset="364.4"/>
+                </svg>
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#F58529"/>
+                        <stop offset="50%" stop-color="#DD2A7B"/>
+                        <stop offset="100%" stop-color="#8134AF"/>
+                    </linearGradient>
+                </defs>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-2xl font-bold" id="progress-percent">0%</span>
+                </div>
+            </div>
+            
+            <div class="space-y-2 text-sm text-gray-500" id="step-status">
+                <div class="step-status-item flex items-center gap-2 justify-center" data-step="1">
+                    <span class="w-2 h-2 rounded-full bg-gray-600"></span> Coletando empresa
+                </div>
+                <div class="step-status-item flex items-center gap-2 justify-center" data-step="2">
+                    <span class="w-2 h-2 rounded-full bg-gray-600"></span> Coletando perfis estratégicos
+                </div>
+                <div class="step-status-item flex items-center gap-2 justify-center" data-step="3">
+                    <span class="w-2 h-2 rounded-full bg-gray-600"></span> Gerando relatórios
+                </div>
+                <div class="step-status-item flex items-center gap-2 justify-center" data-step="4">
+                    <span class="w-2 h-2 rounded-full bg-gray-600"></span> Preparando dashboard
+                </div>
+            </div>
+            
+            <button id="btn-cancel" class="mt-8 ig-btn-secondary" onclick="cancelJob()">Cancelar</button>
+        </div>
+    </section>
+    
+    <!-- SECTION 2: DASHBOARD (Separate Section) -->
+    <section id="dashboard-section" class="hidden min-h-screen">
+        <!-- Top Bar: Profile Info (10% height) -->
+        <header class="ig-card border-b h-[10vh] min-h-[120px] max-h-[180px] flex-shrink-0">
+            <div class="max-w-full mx-auto px-6 h-full flex items-center justify-between">
+                <!-- Profile Info -->
+                <div class="flex items-center gap-6 flex-1 min-w-0" id="profile-header">
+                    <img id="profile-avatar" src="" alt="Avatar" class="profile-avatar w-20 h-20 rounded-full object-cover flex-shrink-0">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <h2 id="profile-name" class="text-2xl font-bold truncate">@perfil</h2>
+                            <span id="profile-verified" class="hidden flex items-center gap-1 text-xs text-blue-400 bg-blue-900/30 px-2 py-1 rounded-full">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                Verificado
+                            </span>
+                        </div>
+                        <p id="profile-bio" class="text-gray-400 text-sm mt-1 truncate"></p>
+                        <div class="flex flex-wrap gap-6 mt-3 text-sm">
+                            <span class="flex items-center gap-1 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg> <span id="stat-followers">0</span> seguidores</span>
+                            <span class="flex items-center gap-1 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg> <span id="stat-following">0</span> seguindo</span>
+                            <span class="flex items-center gap-1 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> <span id="stat-posts">0</span> posts</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters (Top Right) -->
+                <div class="flex items-center gap-4 flex-wrap" id="dashboard-filters">
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-400">Perfil:</label>
+                        <select id="filter-profile" class="ig-input py-2 px-3 w-auto min-w-[180px]" onchange="loadDashboard()"></select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-400">Período:</label>
+                        <select id="filter-months" class="ig-input py-2 px-3 w-auto min-w-[140px]" onchange="loadDashboard()">
+                            <option value="all">Todo período</option>
+                            <option value="1">Último mês</option>
+                            <option value="3">Últimos 3 meses</option>
+                            <option value="6">Últimos 6 meses</option>
+                            <option value="12">Último ano</option>
+                        </select>
+                    </div>
+                    <a id="btn-download" href="#" class="ig-btn-secondary flex items-center gap-2" download>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Baixar Excel
+                    </a>
+                    <button onclick="showInputSection()" class="ig-btn-secondary flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Novo Monitoramento
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Dashboard Content (90% height) -->
+        <main class="h-[90vh] overflow-auto p-6" id="dashboard-content">
+            <!-- Row 1: Engagement Rate Card + Compatibility Gauge -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" id="row1">
+                <div class="stat-card" id="card-engagement">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-400">Taxa de Engajamento</p>
+                            <p class="text-xs text-gray-500">(interações médias / seguidores) × 100</p>
+                        </div>
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-700 flex items-center justify-center" style="border-top-color: var(--ig-primary); border-right-color: var(--ig-primary);">
+                            <span id="engagement-rate" class="text-2xl font-bold">0%</span>
+                        </div>
+                    </div>
+                    <div class="h-32" id="engagement-chart-container">
+                        <canvas id="engagement-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="stat-card" id="card-compatibility">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-400">Compatibilidade com Empresa</p>
+                            <p class="text-xs text-gray-500">Alinhamento temático e de hashtags</p>
+                        </div>
+                        <div class="w-16 h-16 rounded-full border-4 border-gray-700 flex items-center justify-center" style="border-top-color: var(--ig-success); border-right-color: var(--ig-success);">
+                            <span id="compatibility-score" class="text-2xl font-bold">0%</span>
+                        </div>
+                    </div>
+                    <div class="h-32" id="compatibility-chart-container">
+                        <canvas id="compatibility-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row 2: Top Categories (Pie) + Timeline (Line) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" id="row2">
+                <div class="chart-container" id="card-categories">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">Top 5 Temáticas por Interação</h3>
+                    </div>
+                    <div class="h-64" id="categories-chart-container">
+                        <canvas id="categories-chart"></canvas>
+                    </div>
+                    <div id="categories-legend" class="mt-4 flex flex-wrap gap-3 justify-center"></div>
+                </div>
+                
+                <div class="chart-container" id="card-timeline">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">Interações ao Longo do Tempo</h3>
+                        <div class="flex gap-1" id="timeline-granularity">
+                            <button class="filter-chip active" data-granularity="monthly">Mês</button>
+                            <button class="filter-chip" data-granularity="quarterly">Trimestre</button>
+                            <button class="filter-chip" data-granularity="yearly">Ano</button>
+                        </div>
+                    </div>
+                    <div class="h-64" id="timeline-chart-container">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row 3: Top Hashtags (Stacked Bar) + Hashtag Timeline (Area) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" id="row3">
+                <div class="chart-container" id="card-hashtags">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">Hashtags Mais Utilizadas</h3>
+                    </div>
+                    <div class="h-64" id="hashtags-chart-container">
+                        <canvas id="hashtags-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="card-hashtag-timeline">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">Top Hashtags ao Longo do Tempo</h3>
+                    </div>
+                    <div class="h-64" id="hashtag-timeline-chart-container">
+                        <canvas id="hashtag-timeline-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row 4: Insights -->
+            <div class="chart-container" id="card-insights">
+                <h3 class="font-semibold mb-4">Insights & Recomendação</h3>
+                <div class="space-y-3" id="insights-list"></div>
+                <div class="mt-6 p-4 bg-gradient-to-r from-[#F58529]/20 to-[#DD2A7B]/20 border border-gray-700 rounded-lg" id="final-verdict">
+                    <p class="font-semibold mb-2">Veredito Final</p>
+                    <p id="verdict-text" class="text-gray-300"></p>
+                </div>
+            </div>
+        </main>
+    </section>
+    
+    <!-- Error Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
+    
+    <script>
+        // ==================== STATE ====================
+        let currentStep = 1;
+        const totalSteps = 6;
+        let currentJobId = null;
+        let statusPollInterval = null;
+        let charts = {};
+        let currentDashboardData = null;
+        
+        // Default data directory
+        const DEFAULT_DATA_DIR = "C:\\\\Users\\\\gianl\\\\OneDrive\\\\Desktop\\\\Análise de Dados\\\\Projetos\\\\Monitoramento de Instagram\\\\data";
+        
+        // ==================== INPUT SECTION LOGIC ====================
+        function updateStepUI() {
+            // Steps
+            for (let i = 1; i <= totalSteps; i++) {
+                const circle = document.querySelector(`.step-circle[data-step="${i}"]`);
+                const line = document.querySelector(`.step-line[data-line="${i}"]`);
+                const content = document.querySelector(`[data-step-content="${i}"]`);
+                
+                if (i < currentStep) {
+                    circle.classList.remove('active');
+                    circle.classList.add('completed');
+                    circle.innerHTML = '✓';
+                    if (line) line.classList.add('completed');
+                } else if (i === currentStep) {
+                    circle.classList.add('active');
+                    circle.classList.remove('completed');
+                    circle.innerHTML = i;
+                    if (line) line.classList.remove('completed');
+                } else {
+                    circle.classList.remove('active', 'completed');
+                    circle.innerHTML = i;
+                    if (line) line.classList.remove('completed');
+                }
+                
+                if (content) {
+                    content.classList.toggle('hidden', i !== currentStep);
+                }
+            }
+            
+            // Buttons
+            document.getElementById('btn-prev').classList.toggle('hidden', currentStep === 1);
+            document.getElementById('btn-next').classList.toggle('hidden', currentStep === totalSteps);
+            document.getElementById('btn-submit').classList.toggle('hidden', currentStep !== totalSteps);
+        }
+        
+        function nextStep() {
+            if (validateStep(currentStep)) {
+                currentStep++;
+                updateStepUI();
+            }
+        }
+        
+        function prevStep() {
+            currentStep--;
+            updateStepUI();
+        }
+        
+        function validateStep(step) {
+            const content = document.querySelector(`[data-step-content="${step}"]`);
+            if (!content) return true;
+            
+            const inputs = content.querySelectorAll('input[required], select[required]');
+            for (const input of inputs) {
+                if (!input.value.trim()) {
+                    showToast(`Preencha: ${input.previousElementSibling?.textContent || 'campo obrigatório'}`, 'error');
+                    input.focus();
+                    return false;
+                }
+            }
+            
+            // Special validations
+            if (step === 2) {
+                const urls = content.querySelectorAll('input[name="profiles[]"]');
+                let hasValid = false;
+                urls.forEach(input => {
+                    if (input.value.trim()) hasValid = true;
+                });
+                if (!hasValid) {
+                    showToast('Adicione pelo menos um perfil para monitorar', 'error');
+                    return false;
+                }
+            }
+            
+            if (step === 4) {
+                const mode = document.querySelector('input[name="collection_mode"]:checked')?.value;
+                if (mode === 'private') {
+                    const user = document.querySelector('input[name="instagram_username"]');
+                    const pass = document.querySelector('input[name="instagram_password"]');
+                    if (!user.value.trim() || !pass.value.trim()) {
+                        showToast('Credenciais obrigatórias para modo privado', 'error');
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        function addProfileRow() {
+            const container = document.getElementById('profiles-list');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.setAttribute('data-profile-row', '');
+            div.innerHTML = `
+                <input type="url" name="profiles[]" class="ig-input flex-1" placeholder="https://www.instagram.com/influencer/">
+                <button type="button" class="ig-btn-secondary px-4" onclick="removeProfileRow(this)">Remover</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        function removeProfileRow(btn) {
+            const rows = document.querySelectorAll('[data-profile-row]');
+            if (rows.length > 1) {
+                btn.closest('[data-profile-row]').remove();
+            } else {
+                showToast('Mantenha pelo menos um perfil', 'warning');
+            }
+        }
+        
+        // Collection mode toggle
+        document.querySelectorAll('input[name="collection_mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.getElementById('private-credentials').classList.toggle('hidden', e.target.value !== 'private');
+                document.querySelectorAll('#collection-modes .mode-card').forEach(card => {
+                    card.classList.toggle('selected', card.dataset.mode === e.target.value);
+                });
+            });
+        });
+        
+        // Monitoring mode toggle
+        document.querySelectorAll('input[name="monitoring_mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.getElementById('weekly-info').classList.toggle('hidden', e.target.value !== 'weekly');
+                document.querySelectorAll('[data-step-content="5"] .mode-card').forEach(card => {
+                    card.classList.toggle('selected', card.dataset.mode === e.target.value);
+                });
+            });
+        });
+        
+        // Time range cards
+        document.querySelectorAll('#time-range-options .mode-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.querySelector('input').checked = true;
+                document.querySelectorAll('#time-range-options .mode-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            });
+        });
+        
+        // Form Submit
+        document.getElementById('monitor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!validateStep(currentStep)) return;
+            
+            const formData = new FormData(e.target);
+            const data = {
+                company_url: formData.get('company_url'),
+                profiles: Array.from(formData.getAll('profiles[]')).filter(u => u.trim()),
+                time_range: formData.get('time_range'),
+                collection_mode: formData.get('collection_mode'),
+                monitoring_mode: formData.get('monitoring_mode'),
+                output_path: formData.get('output_path'),
+                instagram_username: formData.get('instagram_username') || null,
+                instagram_password: formData.get('instagram_password') || null
+            };
+            
+            try {
+                const res = await fetch('/api/start-monitoring', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.job_id) {
+                    currentJobId = result.job_id;
+                    showLoadingSection();
+                    pollJobStatus(currentJobId);
+                } else {
+                    showToast('Erro ao iniciar monitoramento: ' + (result.detail || 'Erro desconhecido'), 'error');
+                }
+            } catch (err) {
+                showToast('Erro de conexão: ' + err.message, 'error');
+            }
+        });
+        
+        // ==================== LOADING SECTION ====================
+        function showLoadingSection() {
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+        }
+        
+        function showInputSection() {
+            document.getElementById('input-section').classList.remove('hidden');
+            document.getElementById('loading-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            currentStep = 1;
+            updateStepUI();
+            currentJobId = null;
+            if (statusPollInterval) clearInterval(statusPollInterval);
+        }
+        
+        function showDashboardSection() {
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            loadProfilesList();
+        }
+        
+        async function pollJobStatus(jobId) {
+            statusPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/job/${jobId}`);
+                    const job = await res.json();
+                    
+                    updateLoadingUI(job);
+                    
+                    if (job.status === 'completed') {
+                        clearInterval(statusPollInterval);
+                        setTimeout(() => {
+                            showDashboardSection();
+                            loadDashboard();
+                        }, 1000);
+                    } else if (job.status === 'failed') {
+                        clearInterval(statusPollInterval);
+                        showToast('Erro: ' + job.error, 'error');
+                        setTimeout(showInputSection, 3000);
+                    }
+                } catch (err) {
+                    console.error('Poll error:', err);
+                }
+            }, 2000);
+        }
+        
+        function updateLoadingUI(job) {
+            const percent = job.progress;
+            document.getElementById('progress-percent').textContent = percent + '%';
+            document.getElementById('loading-message').textContent = job.message;
+            
+            const circle = document.querySelector('.progress-ring-circle');
+            const circumference = 364.4;
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            // Update step status
+            const steps = ['Coletando empresa', 'Coletando perfis estratégicos', 'Gerando relatórios', 'Preparando dashboard'];
+            steps.forEach((_, i) => {
+                const el = document.querySelector(`.step-status-item[data-step="${i+1}"]`);
+                if (el) {
+                    const dot = el.querySelector('span');
+                    if (job.progress > (i * 25)) {
+                        dot.classList.remove('bg-gray-600');
+                        dot.classList.add(job.status === 'failed' ? 'bg-red-500' : 'bg-green-500');
+                    } else if (job.progress > (i * 20)) {
+                        dot.classList.remove('bg-gray-600');
+                        dot.classList.add('bg-yellow-500');
+                    }
+                }
+            });
+        }
+        
+        function cancelJob() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            showInputSection();
+        }
+        
+        // ==================== DASHBOARD SECTION ====================
+        async function loadProfilesList() {
+            try {
+                const res = await fetch('/api/list-profiles');
+                const data = await res.json();
+                const select = document.getElementById('filter-profile');
+                select.innerHTML = '';
+                
+                Object.keys(data.profiles).forEach(profile => {
+                    const option = document.createElement('option');
+                    option.value = profile;
+                    option.textContent = `@${profile}`;
+                    select.appendChild(option);
+                });
+                
+                if (select.options.length > 0) {
+                    loadDashboard();
+                }
+            } catch (err) {
+                showToast('Erro ao carregar perfis: ' + err.message, 'error');
+            }
+        }
+        
+        async function loadDashboard() {
+            const profile = document.getElementById('filter-profile').value;
+            const months = document.getElementById('filter-months').value;
+            
+            if (!profile) return;
+            
+            const timeRangeMap = { 'all': '30', '1': '30', '3': '90', '6': '180', '12': '180' };
+            const timeRange = timeRangeMap[months] || '30';
+            
+            try {
+                const res = await fetch(`/api/dashboard/${profile}?time_range=${timeRange}`);
+                const data = await res.json();
+                currentDashboardData = data;
+                renderDashboard(data);
+            } catch (err) {
+                showToast('Erro ao carregar dashboard: ' + err.message, 'error');
+            }
+        }
+        
+        function renderDashboard(data) {
+            // Profile Header
+            document.getElementById('profile-avatar').src = data.profile.profile_pic_url || 'https://via.placeholder.com/80';
+            document.getElementById('profile-name').textContent = `@${data.profile.username}`;
+            document.getElementById('profile-bio').textContent = data.profile.biography || 'Sem biografia';
+            document.getElementById('stat-followers').textContent = formatNumber(data.profile.followers);
+            document.getElementById('stat-following').textContent = formatNumber(data.profile.followees);
+            document.getElementById('stat-posts').textContent = formatNumber(data.profile.mediacount);
+            
+            if (data.profile.is_verified) {
+                document.getElementById('profile-verified').classList.remove('hidden');
+            } else {
+                document.getElementById('profile-verified').classList.add('hidden');
+            }
+            
+            document.getElementById('btn-download').href = `/api/download/${data.profile.username}?time_range=${document.getElementById('filter-months').value}`;
+            
+            // Engagement Rate
+            document.getElementById('engagement-rate').textContent = data.engagement_rate.toFixed(2) + '%';
+            renderEngagementGauge(data.engagement_rate);
+            
+            // Compatibility
+            if (data.compatibility_score !== undefined) {
+                document.getElementById('compatibility-score').textContent = data.compatibility_score + '%';
+                renderCompatibilityGauge(data.compatibility_score);
+                document.getElementById('card-compatibility').style.display = 'block';
+            } else {
+                document.getElementById('card-compatibility').style.display = 'none';
+            }
+            
+            // Categories Pie
+            renderCategoriesPie(data.top_categories);
+            
+            // Timeline
+            renderTimeline(data.timeline);
+            
+            // Hashtags Bar
+            renderHashtagsBar(data.top_hashtags);
+            
+            // Hashtag Timeline (Area)
+            renderHashtagTimeline(data.hashtag_timeline);
+            
+            // Insights
+            renderInsights(data.insights || []);
+        }
+        
+        function formatNumber(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+        
+        // ==================== CHARTS ====================
+        function destroyChart(chartId) {
+            if (charts[chartId]) {
+                charts[chartId].destroy();
+                charts[chartId] = null;
+            }
+        }
+        
+        function renderEngagementGauge(rate) {
+            destroyChart('engagement');
+            const ctx = document.getElementById('engagement-chart').getContext('2d');
+            
+            // Max expected engagement rate for influencers ~10%
+            const maxRate = 10;
+            const percentage = Math.min(rate / maxRate, 1);
+            
+            charts.engagement = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentage * 100, (1 - percentage) * 100],
+                        backgroundColor: [
+                            'rgba(225, 48, 108, 0.8)',
+                            'rgba(58, 58, 58, 0.5)'
+                        ],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: -90
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+        
+        function renderCompatibilityGauge(score) {
+            destroyChart('compatibility');
+            const ctx = document.getElementById('compatibility-chart').getContext('2d');
+            
+            const percentage = score / 100;
+            let color = 'rgba(237, 73, 86, 0.8)'; // red
+            if (score >= 70) color = 'rgba(0, 186, 124, 0.8)'; // green
+            else if (score >= 40) color = 'rgba(255, 179, 0, 0.8)'; // yellow
+            
+            charts.compatibility = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentage * 100, (1 - percentage) * 100],
+                        backgroundColor: [color, 'rgba(58, 58, 58, 0.5)'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: -90
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+        
+        function renderCategoriesPie(categories) {
+            destroyChart('categories');
+            const ctx = document.getElementById('categories-chart').getContext('2d');
+            
+            const colors = [
+                'rgba(245, 133, 41, 0.8)',
+                'rgba(221, 42, 123, 0.8)',
+                'rgba(129, 52, 175, 0.8)',
+                'rgba(0, 186, 124, 0.8)',
+                'rgba(255, 179, 0, 0.8)'
+            ];
+            
+            charts.categories = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categories.map(c => c.category.charAt(0).toUpperCase() + c.category.slice(1)),
+                    datasets: [{
+                        data: categories.map(c => c.interactions),
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.label}: ${formatNumber(ctx.raw)} interações (${ctx.raw / ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0) * 100}%)`
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Custom legend
+            const legendContainer = document.getElementById('categories-legend');
+            legendContainer.innerHTML = categories.map((c, i) => `
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="w-3 h-3 rounded" style="background: ${colors[i]}"></span>
+                    <span class="font-medium">${c.category.charAt(0).toUpperCase() + c.category.slice(1)}</span>
+                    <span class="text-gray-400">${formatNumber(c.interactions)} (${c.percentage}%)</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderTimeline(timelineData) {
+            destroyChart('timeline');
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            
+            let currentGranularity = 'monthly';
+            let data = timelineData[currentGranularity] || [];
+            
+            const updateChart = (granularity) => {
+                currentGranularity = granularity;
+                data = timelineData[granularity] || [];
+                
+                charts.timeline.data.labels = data.map(d => d.period);
+                charts.timeline.data.datasets[0].data = data.map(d => d.interactions);
+                charts.timeline.update();
+            };
+            
+            charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.period),
+                    datasets: [{
+                        label: 'Interações',
+                        data: data.map(d => d.interactions),
+                        borderColor: 'rgba(225, 48, 108, 1)',
+                        backgroundColor: 'rgba(225, 48, 108, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#E1306C',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `Interações: ${formatNumber(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(58,58,58,0.5)' }, ticks: { color: '#8E8E8E' } },
+                        y: { grid: { color: 'rgba(58,58,58,0.5)' }, ticks: { color: '#8E8E8E', callback: (v) => formatNumber(v) } }
+                    }
+                }
+            });
+            
+            // Granularity buttons
+            document.querySelectorAll('#timeline-granularity .filter-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#timeline-granularity .filter-chip').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateChart(btn.dataset.granularity);
+                });
+            });
+        }
+        
+        function renderHashtagsBar(hashtags) {
+            destroyChart('hashtags');
+            const ctx = document.getElementById('hashtags-chart').getContext('2d');
+            
+            const top10 = hashtags.slice(0, 10).reverse(); // Reverse for horizontal bar
+            
+            charts.hashtags = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top10.map(h => '#' + h.hashtag),
+                    datasets: [{
+                        label: 'Frequência',
+                        data: top10.map(h => h.count),
+                        backgroundColor: 'rgba(225, 48, 108, 0.8)',
+                        borderRadius: 4
+                    }, {
+                        label: 'Interações Totais',
+                        data: top10.map(h => h.total_interactions),
+                        backgroundColor: 'rgba(245, 133, 41, 0.8)',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#A8A8A8', usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${formatNumber(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(58,58,58,0.5)' }, ticks: { color: '#8E8E8E', callback: (v) => formatNumber(v) } },
+                        y: { grid: { display: false }, ticks: { color: '#A8A8A8' } }
+                    }
+                }
+            });
+        }
+        
+        function renderHashtagTimeline(hashtagTimeline) {
+            destroyChart('hashtagTimeline');
+            const ctx = document.getElementById('hashtag-timeline-chart').getContext('2d');
+            
+            // Group by hashtag
+            const byHashtag = {};
+            hashtagTimeline.forEach(d => {
+                if (!byHashtag[d.hashtag]) byHashtag[d.hashtag] = [];
+                byHashtag[d.hashtag].push(d);
+            });
+            
+            const hashtags = Object.keys(byHashtag).slice(0, 6); // Top 6 for visibility
+            const periods = [...new Set(hashtagTimeline.map(d => d.period))].sort();
+            
+            const areaColors = [
+                'rgba(245, 133, 41, 0.6)',
+                'rgba(221, 42, 123, 0.6)',
+                'rgba(129, 52, 175, 0.6)',
+                'rgba(0, 186, 124, 0.6)',
+                'rgba(255, 179, 0, 0.6)',
+                'rgba(237, 73, 86, 0.6)'
+            ];
+            
+            const borderColors = [
+                'rgba(245, 133, 41, 1)',
+                'rgba(221, 42, 123, 1)',
+                'rgba(129, 52, 175, 1)',
+                'rgba(0, 186, 124, 1)',
+                'rgba(255, 179, 0, 1)',
+                'rgba(237, 73, 86, 1)'
+            ];
+            
+            charts.hashtagTimeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: hashtags.map((tag, i) => ({
+                        label: '#' + tag,
+                        data: periods.map(p => {
+                            const d = byHashtag[tag].find(x => x.period === p);
+                            return d ? d.interactions : 0;
+                        }),
+                        borderColor: borderColors[i],
+                        backgroundColor: areaColors[i],
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        borderWidth: 2
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#A8A8A8', usePointStyle: true, font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${formatNumber(ctx.raw)} interações`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(58,58,58,0.5)' }, ticks: { color: '#8E8E8E' } },
+                        y: { grid: { color: 'rgba(58,58,58,0.5)' }, ticks: { color: '#8E8E8E', callback: (v) => formatNumber(v) }, stacked: true }
+                    }
+                }
+            });
+        }
+        
+        function renderInsights(insights) {
+            const container = document.getElementById('insights-list');
+            container.innerHTML = insights.map(insight => `
+                <div class="insight-card">
+                    <span class="text-lg">${insight.startsWith('✅') || insight.startsWith('🔥') || insight.startsWith('👍') || insight.startsWith('🎯') || insight.startsWith('📈') ? '' : '💡'}</span>
+                    <span class="text-sm text-gray-300 flex-1">${insight}</span>
+                </div>
+            `).join('');
+            
+            // Final verdict
+            const verdictEl = document.getElementById('verdict-text');
+            const compatInsight = insights.find(i => i.includes('compatibilidade'));
+            const engagementInsight = insights.find(i => i.includes('engajamento'));
+            
+            if (compatInsight && engagementInsight) {
+                const compatMatch = compatInsight.match(/(\d+)%/);
+                const engagementMatch = engagementInsight.match(/([\d.]+)%/);
+                const compat = compatMatch ? parseInt(compatMatch[1]) : 0;
+                const engagement = engagementMatch ? parseFloat(engagementMatch[1]) : 0;
+                
+                if (compat >= 70 && engagement >= 2) {
+                    verdictEl.innerHTML = `<span class="text-green-400 font-semibold">✅ RECOMENDADO</span> — Este perfil apresenta forte alinhamento temático com a empresa e boa taxa de engajamento. Perfil adequado para parceria de influência.`;
+                } else if (compat >= 40 && engagement >= 1) {
+                    verdictEl.innerHTML = `<span class="text-yellow-400 font-semibold">⚠️ CONSIDERAR COM RESSALVAS</span> — Alinhamento moderado. Avaliar nichos específicos e histórico de parcerias antes de fechar.`;
+                } else {
+                    verdictEl.innerHTML = `<span class="text-red-400 font-semibold">❌ NÃO RECOMENDADO</span> — Baixo alinhamento temático e/ou engajamento insuficiente. Buscar perfis com melhor fit.`;
+                }
+            }
+        }
+        
+        // ==================== TOAST ====================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'ig-card px-4 py-3 flex items-center gap-3 min-w-[280px] max-w-md animate-slide-in';
+            toast.style.borderLeftColor = 
+                type === 'error' ? 'var(--ig-error)' : 
+                type === 'warning' ? 'var(--ig-warning)' : 
+                type === 'success' ? 'var(--ig-success)' : 'var(--ig-primary)';
+            toast.style.borderLeftWidth = '4px';
+            
+            const icons = {
+                error: '✕',
+                warning: '⚠',
+                success: '✓',
+                info: 'ℹ'
+            };
+            
+            toast.innerHTML = `
+                <span class="text-lg">${icons[type]}</span>
+                <span class="text-sm flex-1">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-white">✕</button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStepUI();
+            
+            // Initialize mode cards selection
+            document.querySelectorAll('.mode-card input:checked').forEach(input => {
+                input.closest('.mode-card').classList.add('selected');
+            });
+            
+            // Set default output path
+            const outputPathInput = document.getElementById('output-path-input');
+            if (outputPathInput && !outputPathInput.value) {
+                outputPathInput.value = DEFAULT_DATA_DIR;
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && !document.getElementById('loading-section').classList.contains('hidden')) {
+                return;
+            }
+        });
+    </script>
+    <style>
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slide-in { animation: slide-in 0.3s ease; }
+    </style>
+</body>
+</html>
