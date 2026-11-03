@@ -1,0 +1,48 @@
+PROJETO DE MONITORAMENTO DE PERFIS ESTRATÉGICOS (Influencers) NO INSTAGRAM
+
+Preciso que você crie um API localhost dedicada ao monitoramento de engajamento de perfis estratégicos no Instagram. 
+Faça a partir do "C:\Users\gianl\OneDrive\Desktop\Análise de Dados\Projetos\Monitoramento de Instagram\monitor_instagram_universal.py" e crie uma pasta com a API local na mesma pasta do arquivo universal
+
+1º Nessa API, o usuário deve inputar:
+1 - Fornecer o link do Instagram da empresa que irá contratar os perfis
+2- Uma lista de perfis para serem monitorados
+3 - Escolha do intervalo de data (30 dias, 90 dias, 180 dias) dos dados a serem analisados
+4 - Se o usuário pretende coletar utilizando um perfil privado ou coletar sem utilizar perfil (deve ser avisado sobre os beneficios e limitações de cada escolha)
+5 - O usuário deve escolher se irá realizar monitoramento dos perfis ao longo do tempo
+--- Caso escolha "Sim", será realizado semanalmente um snapshot do perfil durante 30 dias e atualização do arquivo csv com os novos posts
+--- Caso escolha "Não", passe
+6 - O usuário de escolher o local em que será salvo um arquivo csv dos perfis monitorados para a construção do dashboard
+
+Primeiro, deve ser realizado uma raspagem dos primeiros 25 posts do perfil da empresa que vai contratar a fim de criar uma base temática de referência
+Em sequência, será realizada a raspagem do perfil estratégico de acordo com o período selecionado
+
+3º Sobre o arquivo csv
+0. O nome do arquivo deve ser: "{nome do perfil}_{tempo de raspagem}"
+1. O arquivo deve conter uma tabela chamada "Postagens" com as seguintes colunas: id_perfil, nome_perfil, id_postagem, data_postagem, tipo_postagem (imagens ou vídeo), legenda_postagem, numero_likes (imagens ou vídeo), numero_views (vídeo), numero_republicado (imagens ou vídeo), numero_compartilhamento (imagens ou vídeo), hashtags
+1.1 Sobre as hashtags, elas devem ficar em cada célula de acordo com a postagem e devem ser todas minúsculas
+2. O arquivo deve conter uma tabela chamada "Hashtags", nessa tabela terá: id_perfil, id_postagem e hashtag_n. 
+2.1 Cada coluna é agrupada de acordo com uma hashtag utilizada. Por exemplo, na hashtag_1 irá ter apenas a hashtag #viva
+2.2 As colunas serão denominadas de hashtags_n e cada linha irá conter apenas a hashtag utilizada naquela postagem 
+3. O arquivo deve conter uma tabela chamada "Conteudo", nessa tabela terá: id_perfil, id_postagem, tematica_conteudo
+
+3º A API deve fornecer um dashboard local em uma seção separada a partir do arquivo csv do perfil estratégico respondendo as seguintes perguntas:
+0. No topo do dashboard deve conter: a foto do perfil, a quantidade de seguidores, e a legenda
+1. Taxa de Engajamento: Qual a relação entre o total de interações e o número de seguidores em percentual dos perfis?
+1. Mostre em um card
+2. Quais temáticas tiveram maior interação dos usuários? 
+2.1 Mostre apenas o top 5 em um gráfico pizza
+3. Qual a quantidade de interações do perfil ao longo do tempo (hierarquia de mês, trimestre, ano)?
+3.1 Mostre em um gráfico de linhas
+4. Qual a porcentagem do grau de compatibilidade entre o perfil analisado e o perfil da empresa? (deve-se fazer uma análise sobre alinhamento do perfil com a temática da empresa) 
+4.1 Mostre em um gráfico indicador
+5. Quais as hashtags mais utilizadas?
+5.1 Mostre em um gráfico de barras empilhadas
+6. Quais as hashtags tiveram maior total de interações ao longo do tempo
+6.1 Mostre em um gráfico de faixas
+7. Apresente os insights de acordo com o grau de compatibilidade e o número de interações respondendo a seguinte pergunta: Esse perfil pode ser um bom influencer para nós?
+! O dashboard deve possuir os seguintes filtros no topo: perfis, intervalo de tempo em meses
+
+4º Sobre o UI/UX do API 
+1. A primeira seção dedicada ao input do usuário deve ocupar todo o espaço
+2. A seção do dashboard deve ter no topo as informações do perfil estratégico analisado ocupando 10% da página, o restante é dedicado ao dashboard
+3. Deve ser minimalista e com as cores do Instagram (https://www.instagram.com/)
