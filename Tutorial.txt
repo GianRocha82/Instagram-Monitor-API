@@ -2,13 +2,13 @@ Para executar a API:
 
 Windows (Recomendado)
 cmd
-cd "C:\Users\gianl\OneDrive\Desktop\Análise de Dados\Projetos\Monitoramento de Instagram\instagram_monitor_api"
+cd "C:\Users\[local da API]"
 start.bat
 
 
 Linux/macOS
 bash
-cd "C:/Users/gianl/OneDrive/Desktop/Análise de Dados/Projetos/Monitoramento de Instagram/instagram_monitor_api"
+cd "C:\Users\[local da API]"
 chmod +x start.sh
 ./start.sh
 
