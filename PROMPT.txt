@@ -1,7 +1,7 @@
 PROJETO DE MONITORAMENTO DE PERFIS ESTRATÉGICOS (Influencers) NO INSTAGRAM
 
 Preciso que você crie um API localhost dedicada ao monitoramento de engajamento de perfis estratégicos no Instagram. 
-Faça a partir do "C:\Users\gianl\OneDrive\Desktop\Análise de Dados\Projetos\Monitoramento de Instagram\monitor_instagram_universal.py" e crie uma pasta com a API local na mesma pasta do arquivo universal
+Faça a partir do "monitor_instagram_universal.py" e crie uma pasta com a API local na mesma pasta do arquivo universal
 
 1º Nessa API, o usuário deve inputar:
 1 - Fornecer o link do Instagram da empresa que irá contratar os perfis
