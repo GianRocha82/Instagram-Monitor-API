@@ -26,8 +26,7 @@ call venv\Scripts\activate.bat
 
 echo.
 echo [3/4] Instalando dependencias...
-pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 if errorlevel 1 (
     echo ERRO: Falha ao instalar dependencias
     pause

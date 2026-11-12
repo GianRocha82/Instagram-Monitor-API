@@ -1,14 +1,18 @@
-# Instagram Monitor API (incompleto)
+# Instagram Monitor API
 
-API localhost para raspagem e monitoramento de perfis no Instagram feita com o Hermes Agent. Utiliza FastAPI, Instaloader e interface web integrada.
+API localhost para raspagem e monitoramento de perfis estratégicos no Instagram. Desenvolvida com FastAPI, Instaloader e interface web integrada.
+
+## Dashboard de exemplo
+
+O exemplo compara os perfis @midiabeijaflor e @fc_horacio com dados já incorporados. Para visualizar o dashboard interativo, [baixe o arquivo HTML](https://raw.githubusercontent.com/GianRocha82/Instagram-Monitor-API/main/dashboard_fc_horacio.html) e abra-o no navegador. O GitHub exibe o código do arquivo na página do repositório; a visualização interativa requer abri-lo no navegador. Os gráficos usam Chart.js carregado pela internet.
+
+---
 
 ## Visão Geral
 
-Esta API automatiza a coleta de dados de perfis estratégicos do Instagram para a análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos em HTML. 
+Esta API automatiza a coleta de dados de perfis do Instagram para análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos. Foi projetada para:
 
-Foi projetada para:
-
-- **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas de marketing
+- **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas
 - **Pesquisadores** que analisam dinâmicas de engajamento e temáticas no Instagram
 - **Gestores de social media** que monitoram concorrentes e influenciadores
 
@@ -32,11 +36,9 @@ instagram_monitor_api/
 ├── requirements.txt         # Dependências
 ├── start.sh                 # Script de inicialização (Linux/macOS)
 ├── start.bat                # Script de inicialização (Windows)
-├── start_api.bat            # Inicialização direta com hot-reload
-├── test_payload.json        # Exemplo de payload para testes
 ├── dashboard_fc_horacio.html           # Dashboard standalone (dados embutidos @midiabeijaflor + @fc_horacio)
 ├── embedded_data.json       # Dados embutidos no dashboard (JSON)
-└── GUIA_EXEMPLO_MIDIABEIJAFLOR_FC_HORACIO.pdf  # Guia passo a passo com exemplo
+└── Guia_API_Instagram_Monitor.pdf  # Guia da API
 ```
 
 ---
@@ -93,11 +95,7 @@ python -m app.main
 ### Opção 3: Desenvolvimento (Hot-reload)
 
 ```bash
-# Windows:
-start_api.bat
-
-# Ou direto:
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 ---
@@ -130,7 +128,7 @@ A interface carrega automaticamente com:
 |-------------|--------|--------|-----------|
 | **Período de Análise** | 30, 90, 180 dias | 30 dias | Janela temporal dos posts coletados |
 | **Modo de Coleta** | Público / Privado | Público | "Privado" exige login no Instagram |
-| **Modo de Monitoramento** | Único / Semanal 30 dias | Único | "Semanal" agenda coletas recorrentes |
+| **Modo de Monitoramento** | Único | Único | A coleta semanal ainda não está disponível |
 
 #### Credenciais (Apenas Modo Privado)
 
@@ -176,7 +174,7 @@ Abre direto no navegador (duplo clique) — **não precisa do servidor rodando**
 - **@midiabeijaflor** (perfil base - empresa contratante): 25 posts, 1.808 seguidores
 - **@fc_horacio** (perfil estratégico - influenciador): 97 posts, 48.595 seguidores
 
-Permite alternar entre perfis e filtrar por período (todo período / 1 mês / 3 meses / 6 meses / 1 ano).
+Permite alternar entre perfis e filtrar por período (todo período / 1 mês / 3 meses / 6 meses / 1 ano). Para usar os gráficos é necessário acesso à internet para carregar o Chart.js.
 
 ---
 
@@ -320,8 +318,8 @@ Combina similaridade temática entre empresa e perfil monitorado:
 | `GET` | `/` | Interface web |
 | `POST` | `/api/start-monitoring` | Inicia job de monitoramento |
 | `GET` | `/api/job/{job_id}` | Status do job (progresso, resultado, erro) |
-| `GET` | `/api/dashboard/{profile}` | Dados do dashboard (JSON) |
-| `GET` | `/api/download/{profile}` | Download do arquivo Excel |
+| `GET` | `/api/job/{job_id}` | Resultado e dados do dashboard da execução |
+| `GET` | `/api/job/{job_id}/download/{profile}` | Download do Excel da execução |
 | `GET` | `/api/list-profiles` | Lista perfis com dados salvos |
 | `GET` | `/health` | Health check |
 
@@ -375,14 +373,10 @@ curl "http://localhost:8000/api/job/a1b2c3d4"
 
 ### Monitoramento Semanal
 
-Atualmente **simulado** (marca como configurado). Para produção, implementar com:
+Ainda não implementado e desativado na interface. Para implementar, seriam necessários:
 - `APScheduler` ou `cron` no servidor
 - Persistência de jobs (Redis/PostgreSQL)
 - Notificações (e-mail, webhook, Telegram)
-
-### Análise de compatibilidade
-
-- A compatibilidade entre o perfil contratante e o perfil estratégico depende da correspondência direta entre as temáticas das hashtags utilizadas em ambos os perfis, entretanto, é importante que haja um refinamento da temática/nicho do perfil contratante para melhor análise
 
 ---
 

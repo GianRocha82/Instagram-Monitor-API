@@ -5,7 +5,7 @@ import csv
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from collections import Counter
 
 import pandas as pd
@@ -56,13 +56,13 @@ def create_postagens_sheet(posts: List[PostData], profile: ProfileData) -> List[
         rows.append(row)
     return rows
 
-def create_hashtags_sheet(posts: List[PostData], profile: ProfileData) -> List[Dict[str, Any]]:
+def create_hashtags_sheet(posts: List[PostData], profile: ProfileData) -> Tuple[List[Dict[str, Any]], List[str]]:
     """
     Cria a tabela 'Hashtags' com colunas: id_perfil, id_postagem, hashtag_n
     Cada coluna hashtag_n contém apenas a hashtag naquela posição (baseada no ranking global)
     """
     if not posts:
-        return []
+        return [], []
     
     # Calcular ranking global de hashtags por frequência
     global_hashtag_freq = Counter()

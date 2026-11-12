@@ -451,8 +451,8 @@
                             <div class="text-sm text-gray-400 mt-2">Snapshot único dos dados no momento da execução.</div>
                         </label>
                         <label class="mode-card" data-mode="weekly">
-                            <input type="radio" name="monitoring_mode" value="weekly">
-                            <div class="font-semibold">Monitoramento semanal (30 dias)</div>
+                            <input type="radio" name="monitoring_mode" value="weekly" disabled>
+                            <div class="font-semibold">Monitoramento semanal (indisponível)</div>
                             <div class="text-sm text-gray-400 mt-2">Coleta automática semanal por 30 dias, atualizando CSV com novos posts.</div>
                         </label>
                     </div>
@@ -471,7 +471,7 @@
                         Local de Salvamento
                     </legend>
                     <p class="text-sm text-gray-400 mb-4">
-                        Escolha onde o arquivo Excel (.xlsx) com as 3 abas (Postagens, Hashtags, Conteúdo) será salvo.
+                        Informe o caminho completo de uma pasta no computador onde a API está rodando. O Excel será salvo nessa pasta e poderá ser baixado pelo navegador.
                     </p>
                     <div>
                         <label class="block text-sm font-medium mb-2">Caminho da Pasta *</label>
@@ -705,9 +705,10 @@
         let statusPollInterval = null;
         let charts = {};
         let currentDashboardData = null;
+        let jobResults = [];
         
         // Default data directory
-        const DEFAULT_DATA_DIR = "C:\\\\Users\\\\gianl\\\\OneDrive\\\\Desktop\\\\Análise de Dados\\\\Projetos\\\\Monitoramento de Instagram\\\\data";
+        const DEFAULT_DATA_DIR = __DEFAULT_DATA_DIR__;
         
         // ==================== INPUT SECTION LOGIC ====================
         function updateStepUI() {
@@ -885,6 +886,8 @@
         
         // ==================== LOADING SECTION ====================
         function showLoadingSection() {
+            document.querySelector('#loading-section .loading-spinner').classList.remove('hidden');
+            document.getElementById('btn-cancel').textContent = 'Voltar ao formulário';
             document.getElementById('input-section').classList.add('hidden');
             document.getElementById('loading-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
@@ -918,13 +921,14 @@
                     if (job.status === 'completed') {
                         clearInterval(statusPollInterval);
                         setTimeout(() => {
+                            jobResults = job.result.results;
+                            document.getElementById("filter-months").disabled = true;
                             showDashboardSection();
-                            loadDashboard();
                         }, 1000);
                     } else if (job.status === 'failed') {
                         clearInterval(statusPollInterval);
-                        showToast('Erro: ' + job.error, 'error');
-                        setTimeout(showInputSection, 3000);
+                        document.querySelector('#loading-section .loading-spinner').classList.add('hidden');
+                        document.getElementById('btn-cancel').textContent = 'Voltar ao formulário';
                     }
                 } catch (err) {
                     console.error('Poll error:', err);
@@ -965,47 +969,26 @@
         }
         
         // ==================== DASHBOARD SECTION ====================
-        async function loadProfilesList() {
-            try {
-                const res = await fetch('/api/list-profiles');
-                const data = await res.json();
-                const select = document.getElementById('filter-profile');
-                select.innerHTML = '';
-                
-                Object.keys(data.profiles).forEach(profile => {
-                    const option = document.createElement('option');
-                    option.value = profile;
-                    option.textContent = `@${profile}`;
-                    select.appendChild(option);
-                });
-                
-                if (select.options.length > 0) {
-                    loadDashboard();
-                }
-            } catch (err) {
-                showToast('Erro ao carregar perfis: ' + err.message, 'error');
-            }
+        function loadProfilesList() {
+            const select = document.getElementById('filter-profile');
+            select.replaceChildren();
+            jobResults.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.profile;
+                option.textContent = `@${item.profile}`;
+                select.appendChild(option);
+            });
+            loadDashboard();
         }
-        
-        async function loadDashboard() {
+
+        function loadDashboard() {
             const profile = document.getElementById('filter-profile').value;
-            const months = document.getElementById('filter-months').value;
-            
-            if (!profile) return;
-            
-            const timeRangeMap = { 'all': '30', '1': '30', '3': '90', '6': '180', '12': '180' };
-            const timeRange = timeRangeMap[months] || '30';
-            
-            try {
-                const res = await fetch(`/api/dashboard/${profile}?time_range=${timeRange}`);
-                const data = await res.json();
-                currentDashboardData = data;
-                renderDashboard(data);
-            } catch (err) {
-                showToast('Erro ao carregar dashboard: ' + err.message, 'error');
-            }
+            const item = jobResults.find(result => result.profile === profile);
+            if (!item) return;
+            currentDashboardData = item.dashboard;
+            renderDashboard(item.dashboard);
         }
-        
+
         function renderDashboard(data) {
             // Profile Header
             document.getElementById('profile-avatar').src = data.profile.profile_pic_url || 'https://via.placeholder.com/80';
@@ -1021,7 +1004,7 @@
                 document.getElementById('profile-verified').classList.add('hidden');
             }
             
-            document.getElementById('btn-download').href = `/api/download/${data.profile.username}?time_range=${document.getElementById('filter-months').value}`;
+            document.getElementById('btn-download').href = `/api/job/${encodeURIComponent(currentJobId)}/download/${encodeURIComponent(data.profile.username)}`;
             
             // Engagement Rate
             document.getElementById('engagement-rate').textContent = data.engagement_rate.toFixed(2) + '%';
@@ -1040,7 +1023,7 @@
             renderCategoriesPie(data.top_categories);
             
             // Timeline
-            renderTimeline(data.timeline);
+            renderTimeline(data.timeline_data);
             
             // Hashtags Bar
             renderHashtagsBar(data.top_hashtags);

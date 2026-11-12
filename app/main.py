@@ -4,6 +4,7 @@ Main FastAPI Application - Instagram Monitor API
 import os
 import uuid
 import asyncio
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -68,7 +69,7 @@ def update_job(job_id: str, status: str, progress: int, message: str,
         error=error
     )
 
-async def run_monitoring_job(job_id: str, input_data: ProfileInput):
+def run_monitoring_job(job_id: str, input_data: ProfileInput):
     """Executa o job de monitoramento em background."""
     try:
         update_job(job_id, "running", 5, "Iniciando coleta de dados...")
@@ -105,6 +106,12 @@ async def run_monitoring_job(job_id: str, input_data: ProfileInput):
             profile, posts = scrape_profile(
                 loader, username, max_posts=100, time_range=input_data.time_range
             )
+            if not posts:
+                raise ValueError(
+                    f"Nenhuma publicação de @{username} foi encontrada nos últimos "
+                    f"{input_data.time_range.value} dias entre as publicações coletadas. "
+                    "Confira o perfil e tente um período maior."
+                )
             all_target_profiles.append(profile)
             all_target_posts.append((profile, posts))
             
@@ -147,8 +154,9 @@ async def run_monitoring_job(job_id: str, input_data: ProfileInput):
         })
         
     except Exception as e:
-        update_job(job_id, "failed", 0, f"Erro: {str(e)}", error=str(e))
-        print(f"Job {job_id} falhou: {e}")
+        progress = jobs[job_id].progress if job_id in jobs else 0
+        update_job(job_id, "failed", progress, f"Erro: {str(e)}", error=str(e))
+        logging.exception("Job %s falhou", job_id)
 
 # ==================== API ENDPOINTS ====================
 
@@ -173,21 +181,33 @@ async def root(request: Request):
     
     # Replace DATA_DIR
     html_content = html_content.replace('{{ DATA_DIR }}', str(DATA_DIR).replace('\\', '\\\\'))
+    import json
+    html_content = html_content.replace('__DEFAULT_DATA_DIR__', json.dumps(str(DATA_DIR), ensure_ascii=True))
     
     return HTMLResponse(content=html_content)
 
 @app.post("/api/start-monitoring")
 async def start_monitoring(background_tasks: BackgroundTasks, input_data: ProfileInput):
     """Inicia job de monitoramento."""
-    job_id = str(uuid.uuid4())[:8]
+    job_id = uuid.uuid4().hex
+    if input_data.monitoring_mode == MonitoringMode.WEEKLY_30_DAYS:
+        raise HTTPException(400, "Monitoramento semanal ainda não está disponível. Selecione coleta única.")
+    if input_data.collection_mode == CollectionMode.PRIVATE_PROFILE and not (input_data.instagram_username and input_data.instagram_password):
+        raise HTTPException(400, "Informe usuário e senha para a coleta autenticada.")
+    for url in [input_data.company_url, *input_data.profiles]:
+        if url.host not in ("instagram.com", "www.instagram.com") or not extract_username_from_url(str(url)):
+            raise HTTPException(400, "Informe URLs de perfis válidas do Instagram.")
     
     # Validar caminho de saída
     output_path = Path(input_data.output_path)
-    if not output_path.exists():
-        try:
-            output_path.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            raise HTTPException(400, f"Caminho de saída inválido: {e}")
+    try:
+        if not input_data.output_path.strip() or not output_path.is_absolute():
+            raise ValueError("informe um caminho absoluto")
+        output_path.mkdir(parents=True, exist_ok=True)
+        if not output_path.is_dir():
+            raise ValueError("o caminho não é uma pasta")
+    except (OSError, ValueError) as e:
+        raise HTTPException(400, f"Caminho de saída inválido: {e}")
     
     # Criar job
     jobs[job_id] = JobStatus(
@@ -201,6 +221,17 @@ async def start_monitoring(background_tasks: BackgroundTasks, input_data: Profil
     background_tasks.add_task(run_monitoring_job, job_id, input_data)
     
     return {"job_id": job_id, "status": "started"}
+
+@app.get("/api/job/{job_id}/download/{profile_name}")
+def download_job_file(job_id: str, profile_name: str):
+    job = jobs.get(job_id)
+    if not job or job.status != "completed" or not job.result:
+        raise HTTPException(404, "Resultado não encontrado")
+    item = next((r for r in job.result["results"] if r["profile"] == profile_name), None)
+    if not item or not Path(item["excel_file"]).is_file():
+        raise HTTPException(404, "Arquivo não encontrado")
+    return FileResponse(item["excel_file"], filename=Path(item["excel_file"]).name,
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 @app.get("/api/job/{job_id}")
 async def get_job_status(job_id: str):
