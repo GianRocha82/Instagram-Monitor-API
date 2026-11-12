@@ -1,4 +1,4 @@
-# Instagram Monitor API
+# Instagram Monitor API (incompleto)
 
 API localhost para raspagem e monitoramento de perfis no Instagram feita com o Hermes Agent. Utiliza FastAPI, Instaloader e interface web integrada.
 
