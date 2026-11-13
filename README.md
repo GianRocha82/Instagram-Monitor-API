@@ -6,6 +6,8 @@ API localhost para raspagem e monitoramento de perfis estratégicos no Instagram
 
 ## Visão Geral
 
+![Página inicial do Instagram Monitor](frontend/pagina-inicial.png)
+
 Esta API automatiza a coleta de dados de perfis do Instagram para análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos. Foi projetada para:
 
 - **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas
