@@ -2,10 +2,6 @@
 
 API localhost para raspagem e monitoramento de perfis estratégicos no Instagram. Desenvolvida com FastAPI, Instaloader e interface web integrada.
 
-## Dashboard de exemplo
-
-O exemplo compara os perfis @midiabeijaflor e @fc_horacio com dados já incorporados. Para visualizar o dashboard interativo, [baixe o arquivo HTML](https://raw.githubusercontent.com/GianRocha82/Instagram-Monitor-API/main/dashboard_fc_horacio.html) e abra-o no navegador. O GitHub exibe o código do arquivo na página do repositório; a visualização interativa requer abri-lo no navegador. Os gráficos usam Chart.js carregado pela internet.
-
 ---
 
 ## Visão Geral
