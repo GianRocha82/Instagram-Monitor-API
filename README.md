@@ -8,6 +8,8 @@ API localhost para raspagem e monitoramento de perfis estratégicos no Instagram
 
 ![Página inicial do Instagram Monitor](frontend/pagina-inicial.png)
 
+A interface apresenta o projeto em tema escuro. Clique em **Começar análise** para acessar o formulário de seis etapas e acompanhar a coleta até a abertura do dashboard.
+
 Esta API automatiza a coleta de dados de perfis do Instagram para análise de engajamento, compatibilidade temática e geração de relatórios em Excel com dashboards interativos. Foi projetada para:
 
 - **Empresas/agências** que precisam avaliar perfis para parcerias e campanhas
@@ -28,7 +30,9 @@ instagram_monitor_api/
 │   ├── dashboard_analytics.py # Métricas e preparação de dashboards
 │   └── __init__.py
 ├── frontend/
-│   └── index.html           # Interface web single-page
+│   ├── index.html           # Interface web single-page
+│   ├── hero-monitor.png     # Imagem de fundo da página inicial
+│   └── pagina-inicial.png   # Captura da página inicial
 ├── data/                    # Arquivos Excel gerados
 ├── venv/                    # Ambiente virtual Python
 ├── requirements.txt         # Dependências
@@ -104,7 +108,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 Abra o navegador em: **http://localhost:8000**
 
-A interface carrega automaticamente com:
+Após clicar em **Começar análise**, a interface oferece:
 - Formulário de configuração (6 passos)
 - Seletores de modo de coleta
 - Área de acompanhamento de progresso

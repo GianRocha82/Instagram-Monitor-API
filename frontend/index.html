@@ -6,7 +6,7 @@
     <title>Instagram Monitor - Monitoramento de Perfis Estratégicos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Grand+Hotel&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --ig-primary: #E1306C;
@@ -299,23 +299,49 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--ig-primary);
         }
+
+        /* Editorial shell shared by the introduction, form and waiting screen. */
+        body { background: #0c0b0d; }
+        .site-bar { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:30px 5%; position:relative; z-index:2; font-size:13px; letter-spacing:.04em; }
+        .site-brand { display:flex; align-items:center; gap:10px; color:#fff; font-weight:600; }
+        .site-brand svg { width:22px; height:22px; fill:currentColor; }
+        .site-repo { color:#d6d1d2; text-align:right; }
+        .hero { min-height:100vh; position:relative; overflow:hidden; background:#151011 url('/static/hero-monitor.png') center/cover no-repeat; }
+        .hero::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(10,9,10,.94) 0%,rgba(10,9,10,.80) 34%,rgba(10,9,10,.25) 75%),linear-gradient(0deg,rgba(10,9,10,.52),transparent 45%); }
+        .hero-content { position:relative; z-index:1; width:min(900px,90%); margin:0 5%; padding:clamp(90px,13vh,160px) 0 100px; }
+        .eyebrow { color:#efb0c6; font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:700; }
+        .hero h1 { font-family:'DM Sans',sans-serif; font-size:clamp(56px,8vw,110px); line-height:.98; letter-spacing:-.065em; font-weight:500; margin:24px 0 30px; max-width:850px; }
+        .hero h1 span { font-family:'Grand Hotel',cursive; font-size:1em; letter-spacing:-.035em; font-weight:400; padding-right:.08em; }
+        .hero-copy { max-width:460px; color:#ded9d9; font-size:16px; line-height:1.7; }
+        .hero-action { display:inline-flex; align-items:center; gap:42px; margin-top:30px; padding:17px 22px; border-radius:3px; }
+        .hero-action span { font-size:20px; line-height:1; }
+        #input-section, #loading-section { background: radial-gradient(ellipse at 90% 10%,rgba(129,52,175,.14),transparent 36%),radial-gradient(ellipse at 5% 95%,rgba(221,42,123,.09),transparent 35%),#0c0b0d; }
+        #input-section .form-wrap { max-width:1000px; padding-top:45px; }
+        #input-section .form-heading { text-align:left; max-width:720px; margin-bottom:45px; }
+        #input-section .form-heading h1 { font-family:'DM Sans',sans-serif; color:#fff; font-size:clamp(40px,5vw,64px); font-weight:500; line-height:1.04; letter-spacing:-.05em; margin:14px 0; }
+        #input-section .form-heading p { color:#a8a0a4; }
+        #input-section .ig-card { background:rgba(26,23,27,.85); border-color:#393138; border-radius:4px; padding:36px; }
+        #input-section .ig-input, #input-section .mode-card { background:#151216; border-color:#443940; border-radius:4px; }
+        #input-section .mode-card.selected { border-color:#dd2a7b; background:rgba(221,42,123,.09); }
+        #input-section .step-indicator { max-width:none; }
+        #input-section .ig-btn-primary, #loading-section .ig-btn-secondary { border-radius:3px; }
+        #loading-section { flex-direction:column; justify-content:flex-start; }
+        #loading-section .site-bar { width:100%; }
+        .waiting-card { width:min(560px,90%); margin:auto; padding:48px 30px 70px; }
+        .waiting-card h2 { font-family:'DM Sans',sans-serif; font-size:clamp(36px,5vw,56px); font-weight:500; line-height:1.05; letter-spacing:-.05em; }
+        .waiting-card #step-status { display:grid; gap:10px; margin-top:32px; }
+        .waiting-card .step-status-item { padding:12px; background:#1a171b; border:1px solid #393138; border-radius:4px; }
+        @media(max-width:640px) { .site-bar { padding:24px 5%; font-size:11px; } .hero { background-position:62% center; } .hero::before { background:linear-gradient(90deg,rgba(10,9,10,.92),rgba(10,9,10,.48)),linear-gradient(0deg,rgba(10,9,10,.75),transparent); } .hero-content { padding-top:110px; } .hero h1 { font-size:clamp(52px,13vw,75px); } #input-section .ig-card { padding:24px 18px; } }
     </style>
 </head>
 <body class="antialiased">
+    <section id="home-section" class="hero"><div class="site-bar"><a class="site-brand" href="https://github.com/GianRocha82" target="_blank" rel="noopener noreferrer" aria-label="Perfil de Gian Rocha no GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.13c-3.1.68-3.75-1.32-3.75-1.32-.51-1.29-1.24-1.63-1.24-1.63-1.01-.69.08-.68.08-.68 1.12.08 1.71 1.15 1.71 1.15.99 1.7 2.6 1.21 3.23.92.1-.72.39-1.21.71-1.49-2.47-.28-5.07-1.24-5.07-5.49 0-1.21.43-2.2 1.14-2.98-.12-.28-.49-1.41.11-2.94 0 0 .93-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.12-1.44 3.04-1.14 3.04-1.14.6 1.53.23 2.66.12 2.94.71.78 1.14 1.77 1.14 2.98 0 4.26-2.6 5.2-5.08 5.48.4.35.75 1.02.75 2.06v3.13c0 .3.2.65.76.54A11.1 11.1 0 0 0 12 .9Z"/></svg><span>Gian Rocha</span></a><span class="site-repo">instagram_monitor_api</span></div><div class="hero-content"><p class="eyebrow">Instagram Monitor · Inteligência para parcerias</p><h1>Escolha o melhor para o seu <span class="ig-gradient-text">NEGÓCIO</span></h1><p class="hero-copy">Conheça os perfis que fazem sentido para a sua marca. A API coleta dados do Instagram e transforma engajamento e afinidade temática em análises e relatórios para apoiar suas decisões.</p><button type="button" class="ig-btn-primary hero-action" onclick="openForm()">Começar análise <span aria-hidden="true">↗</span></button></div></section>
     <!-- SECTION 1: INPUT FORM (Full Screen) -->
-    <section id="input-section" class="min-h-screen">
-        <div class="max-w-6xl mx-auto px-4 py-12 md:py-20">
-            <!-- Header -->
-            <div class="text-center mb-12">
-                <h1 class="text-4xl md:text-5xl font-bold ig-gradient-text mb-4">
-                    Instagram Monitor
-                </h1>
-                <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    Monitoramento de engajamento de perfis estratégicos para campanhas de influência
-                </p>
-            </div>
-            
-            <!-- Progress Steps -->
+    <section id="input-section" class="hidden min-h-screen">
+        <div class="site-bar"><a class="site-brand" href="https://github.com/GianRocha82" target="_blank" rel="noopener noreferrer" aria-label="Perfil de Gian Rocha no GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.13c-3.1.68-3.75-1.32-3.75-1.32-.51-1.29-1.24-1.63-1.24-1.63-1.01-.69.08-.68.08-.68 1.12.08 1.71 1.15 1.71 1.15.99 1.7 2.6 1.21 3.23.92.1-.72.39-1.21.71-1.49-2.47-.28-5.07-1.24-5.07-5.49 0-1.21.43-2.2 1.14-2.98-.12-.28-.49-1.41.11-2.94 0 0 .93-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.12-1.44 3.04-1.14 3.04-1.14.6 1.53.23 2.66.12 2.94.71.78 1.14 1.77 1.14 2.98 0 4.26-2.6 5.2-5.08 5.48.4.35.75 1.02.75 2.06v3.13c0 .3.2.65.76.54A11.1 11.1 0 0 0 12 .9Z"/></svg><span>Gian Rocha</span></a><span class="site-repo">instagram_monitor_api</span></div>
+        <div class="form-wrap max-w-6xl mx-auto px-4 py-12 md:py-20">
+            <div class="form-heading"><p class="eyebrow">Sua próxima parceria começa aqui</p><h1>Vamos conhecer<br>o seu negócio.</h1><p>Conte um pouco sobre sua marca e os perfis que você quer analisar.</p></div>
+                        <!-- Progress Steps -->
             <div class="step-indicator mb-12 max-w-4xl mx-auto" id="progress-steps">
                 <div class="step-circle active" data-step="1">1</div>
                 <div class="step-line" data-line="1"></div>
@@ -497,9 +523,11 @@
     
     <!-- LOADING SECTION -->
     <section id="loading-section" class="hidden min-h-screen flex items-center justify-center">
-        <div class="text-center max-w-md mx-auto px-4">
+        <div class="site-bar"><a class="site-brand" href="https://github.com/GianRocha82" target="_blank" rel="noopener noreferrer" aria-label="Perfil de Gian Rocha no GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.13c-3.1.68-3.75-1.32-3.75-1.32-.51-1.29-1.24-1.63-1.24-1.63-1.01-.69.08-.68.08-.68 1.12.08 1.71 1.15 1.71 1.15.99 1.7 2.6 1.21 3.23.92.1-.72.39-1.21.71-1.49-2.47-.28-5.07-1.24-5.07-5.49 0-1.21.43-2.2 1.14-2.98-.12-.28-.49-1.41.11-2.94 0 0 .93-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.12-1.44 3.04-1.14 3.04-1.14.6 1.53.23 2.66.12 2.94.71.78 1.14 1.77 1.14 2.98 0 4.26-2.6 5.2-5.08 5.48.4.35.75 1.02.75 2.06v3.13c0 .3.2.65.76.54A11.1 11.1 0 0 0 12 .9Z"/></svg><span>Gian Rocha</span></a><span class="site-repo">instagram_monitor_api</span></div>
+        <div class="waiting-card text-center mx-auto px-4">
+            <p class="eyebrow mb-5">Instagram Monitor · Em andamento</p>
             <div class="loading-spinner mx-auto mb-8"></div>
-            <h2 class="text-2xl font-bold mb-4">Processando Monitoramento</h2>
+            <h2 class="mb-4">Estamos preparando<br>sua análise.</h2>
             <p class="text-gray-400 mb-6" id="loading-message">Iniciando...</p>
             
             <!-- Progress Ring -->
@@ -884,6 +912,12 @@
             }
         });
         
+        function openForm() {
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('input-section').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
         // ==================== LOADING SECTION ====================
         function showLoadingSection() {
             document.querySelector('#loading-section .loading-spinner').classList.remove('hidden');
