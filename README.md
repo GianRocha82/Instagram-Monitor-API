@@ -180,6 +180,8 @@ Permite alternar entre perfis e filtrar por período (todo período / 1 mês / 3
 
 ## Exemplo Prático: @midiabeijaflor (Empresa) vs @fc_horacio (Estratégico)
 
+![Dashboard de exemplo: comparação entre Mídia Beija-Flor e FC Horácio](dashboard-exemplo.png)
+
 ### Contexto
 Empresa de mídia local (**@midiabeijaflor** — Beija-Flor Mídia, Várzea do Poço/BA) avalia parceria com influenciador de futebol amador (**@fc_horacio** — Horácio F Amador, cobertura estadual do Intermunicipal BA).
 
